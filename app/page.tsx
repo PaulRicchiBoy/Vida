@@ -38,7 +38,36 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
-const translations = {
+// Definición de tipos
+interface Translation {
+  [key: string]: any
+}
+
+interface Translations {
+  en: Translation
+  es: Translation
+}
+
+interface ClassItem {
+  key: string
+  icon: React.ComponentType
+  color: 'green' | 'blue' | 'red' | 'purple'
+  image: string
+}
+
+interface ValueItem {
+  key: string
+  icon: React.ComponentType
+  color: 'green' | 'blue' | 'purple'
+}
+
+interface PlanItem {
+  key: string
+  popular: boolean
+  icon: React.ComponentType
+}
+
+const translations: Translations = {
   en: {
     nav: {
       home: "Home",
@@ -365,18 +394,15 @@ export default function VidaWellnessLanding() {
   })
 
   const [purchaseForm, setPurchaseForm] = useState({
-    // Personal Info
     firstName: "",
     lastName: "",
     email: "",
     phone: "",
     birthDate: "",
-    // Payment Info
     cardNumber: "",
     expiryDate: "",
     cvv: "",
     cardName: "",
-    // Address
     address: "",
     city: "",
     country: "",
@@ -436,7 +462,6 @@ export default function VidaWellnessLanding() {
     setIsProcessing(true)
 
     try {
-      // Submit to Google Sheets
       await fetch("/api/submit-purchase", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -449,7 +474,6 @@ export default function VidaWellnessLanding() {
         }),
       })
 
-      // Process payment
       await fetch("/api/process-payment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -494,6 +518,26 @@ export default function VidaWellnessLanding() {
     instagram: "https://instagram.com/vidawellnesscenter",
     youtube: "https://youtube.com/@vidawellnesscenter",
   }
+
+  // Mapa de colores para Tailwind
+  const colorMap = {
+    green: {
+      bg: 'bg-green-100',
+      text: 'text-green-600'
+    },
+    blue: {
+      bg: 'bg-blue-100',
+      text: 'text-blue-600'
+    },
+    red: {
+      bg: 'bg-red-100',
+      text: 'text-red-600'
+    },
+    purple: {
+      bg: 'bg-purple-100',
+      text: 'text-purple-600'
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white overflow-x-hidden">
@@ -758,9 +802,10 @@ export default function VidaWellnessLanding() {
                 image:
                   "https://images.unsplash.com/photo-1504609813442-a8924e83f76e?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
               },
-            ].map((item) => {
+            ].map((item: ClassItem) => {
               const IconComponent = item.icon
               const classData = t.classes[item.key as keyof typeof t.classes]
+
               return (
                 <motion.div
                   key={item.key}
@@ -771,10 +816,11 @@ export default function VidaWellnessLanding() {
                   <Card className="overflow-hidden border-0 bg-white shadow-lg hover:shadow-2xl transition-all duration-500">
                     <div className="relative h-48 overflow-hidden">
                       <Image
-                        src={item.image || "/placeholder.svg"}
+                        src={item.image}
                         alt={classData.title}
                         fill
                         className="object-cover group-hover:scale-110 transition-transform duration-500"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                       <div className="absolute top-4 right-4">
@@ -789,8 +835,8 @@ export default function VidaWellnessLanding() {
                     </div>
                     <CardHeader>
                       <div className="flex items-center space-x-3">
-                        <div className={`w-10 h-10 bg-${item.color}-100 rounded-full flex items-center justify-center`}>
-                          <IconComponent className={`w-5 h-5 text-${item.color}-600`} />
+                        <div className={`${colorMap[item.color].bg} w-10 h-10 rounded-full flex items-center justify-center`}>
+                          <IconComponent className={`${colorMap[item.color].text} w-5 h-5`} />
                         </div>
                         <CardTitle className="text-lg">{classData.title}</CardTitle>
                       </div>
@@ -807,21 +853,11 @@ export default function VidaWellnessLanding() {
       </section>
 
       {/* About Section */}
-      <section id="about" className="py-20 bg-white relative">
-        <div className="absolute inset-0 opacity-5">
-          <Image
-            src="https://images.unsplash.com/photo-1587974928442-77dc3e0dba72?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80"
-            alt="Machu Picchu"
-            fill
-            className="object-cover"
-          />
-        </div>
-
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <section id="about" className="py-20 bg-white">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div className="text-center mb-16" {...fadeInUp}>
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">{t.about.title}</h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-8">{t.about.subtitle}</p>
-            <p className="text-lg text-gray-700 max-w-3xl mx-auto">{t.about.story}</p>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">{t.about.subtitle}</p>
           </motion.div>
 
           <motion.div
@@ -835,15 +871,14 @@ export default function VidaWellnessLanding() {
               { key: "tradition", icon: Shield, color: "green" },
               { key: "community", icon: Users, color: "blue" },
               { key: "transformation", icon: Target, color: "purple" },
-            ].map((value) => {
+            ].map((value: ValueItem) => {
               const IconComponent = value.icon
               const valueData = t.about.values[value.key as keyof typeof t.about.values]
+
               return (
                 <motion.div key={value.key} variants={fadeInUp} className="text-center">
-                  <div
-                    className={`w-16 h-16 bg-${value.color}-100 rounded-full flex items-center justify-center mx-auto mb-4`}
-                  >
-                    <IconComponent className={`w-8 h-8 text-${value.color}-600`} />
+                  <div className={`${colorMap[value.color].bg} w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4`}>
+                    <IconComponent className={`${colorMap[value.color].text} w-8 h-8`} />
                   </div>
                   <h3 className="text-xl font-bold text-gray-900 mb-2">{valueData.title}</h3>
                   <p className="text-gray-600">{valueData.description}</p>
@@ -855,7 +890,7 @@ export default function VidaWellnessLanding() {
       </section>
 
       {/* Membership Section */}
-      <section id="membership" className="py-20 bg-gradient-to-br from-gray-50 to-green-50">
+      <section id="membership" className="py-20 bg-gradient-to-br from-blue-50 to-green-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div className="text-center mb-16" {...fadeInUp}>
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">{t.membership.title}</h2>
@@ -873,14 +908,13 @@ export default function VidaWellnessLanding() {
               { key: "condor", popular: false, icon: Zap },
               { key: "puma", popular: true, icon: Trophy },
               { key: "serpent", popular: false, icon: Star },
-            ].map((plan) => {
+            ].map((plan: PlanItem) => {
               const IconComponent = plan.icon
               const planData = t.membership[plan.key as keyof typeof t.membership]
+
               return (
                 <motion.div key={plan.key} variants={fadeInUp} whileHover={{ scale: 1.05 }} className="relative">
-                  <Card
-                    className={`relative overflow-hidden ${plan.popular ? "border-green-500 border-2 shadow-2xl" : "shadow-lg"} bg-white`}
-                  >
+                  <Card className={`relative overflow-hidden ${plan.popular ? "border-green-500 border-2 shadow-2xl" : "shadow-lg"} bg-white`}>
                     {plan.popular && (
                       <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                         <Badge className="bg-green-600 text-white px-4 py-1">
@@ -927,81 +961,6 @@ export default function VidaWellnessLanding() {
                 </motion.div>
               )
             })}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Testimonials Section */}
-      <section id="testimonials" className="py-20 bg-white">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div className="text-center mb-16" {...fadeInUp}>
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">{t.testimonials.title}</h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">{t.testimonials.subtitle}</p>
-          </motion.div>
-
-          <motion.div
-            className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto"
-            variants={staggerContainer}
-            initial="initial"
-            whileInView="animate"
-            viewport={{ once: true }}
-          >
-            {[
-              {
-                name: "Maria González",
-                role: language === "en" ? "Yoga Enthusiast" : "Entusiasta del Yoga",
-                text:
-                  language === "en"
-                    ? "VIDA transformed my life. The Sacred Valley energy combined with expert instruction created the perfect wellness journey."
-                    : "VIDA transformó mi vida. La energía del Valle Sagrado combinada con instrucción experta creó el viaje de bienestar perfecto.",
-                image:
-                  "https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80",
-              },
-              {
-                name: "Carlos Mendoza",
-                role: language === "en" ? "Fitness Member" : "Miembro Fitness",
-                text:
-                  language === "en"
-                    ? "The Inca Warrior Training gave me strength I never knew I had. The community here is incredible."
-                    : "El Entrenamiento Guerrero Inca me dio una fuerza que nunca supe que tenía. La comunidad aquí es increíble.",
-                image:
-                  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80",
-              },
-              {
-                name: "Ana Rodriguez",
-                role: language === "en" ? "Dance Student" : "Estudiante de Danza",
-                text:
-                  language === "en"
-                    ? "The Andean Fusion Dance classes connect me to my roots while keeping me fit. It's pure joy!"
-                    : "Las clases de Danza Fusión Andina me conectan con mis raíces mientras me mantienen en forma. ¡Es pura alegría!",
-                image:
-                  "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80",
-              },
-            ].map((testimonial, index) => (
-              <motion.div key={index} variants={fadeInUp} whileHover={{ scale: 1.05 }}>
-                <Card className="text-center h-full bg-gradient-to-br from-green-50 to-blue-50 border-0 shadow-lg">
-                  <CardHeader>
-                    <Image
-                      src={testimonial.image || "/placeholder.svg"}
-                      alt={testimonial.name}
-                      width={80}
-                      height={80}
-                      className="rounded-full mx-auto mb-4"
-                    />
-                    <CardTitle className="text-lg">{testimonial.name}</CardTitle>
-                    <CardDescription className="text-green-600 font-medium">{testimonial.role}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-700 italic">"{testimonial.text}"</p>
-                    <div className="flex justify-center mt-4">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
           </motion.div>
         </div>
       </section>
